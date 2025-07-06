@@ -1,0 +1,21 @@
+#pragma once
+#include "CRTVector.h"
+
+class CRTTriangle
+{
+public:
+
+	static constexpr int vertsInTriangle = 3;
+
+	CRTTriangle(const CRTVector& v0, const CRTVector& v1, const CRTVector& v2);
+
+	const CRTVector& getNormal() const;
+
+	const CRTVector& getVertex(int index) const;
+private:
+	void calculateNormal();
+
+	CRTVector verts[vertsInTriangle];
+	CRTVector normal;
+};
+
