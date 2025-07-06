@@ -2,11 +2,12 @@
 #include <fstream>
 #include "Math/CRTRay.h"
 #include "Math/CRTTriangle.h"
+#include "CRTCamera.h"
 
 const int SCREEN_WIDTH = 1920/2;
 const int SCREEN_HEIGHT = 1080/2;
 
-CRTRay genRay(int i, int j)
+CRTRay genRay(int i, int j, const CRTCamera& camera)
 {
 	float x, y;
 	x = i + 0.5;
@@ -21,8 +22,9 @@ CRTRay genRay(int i, int j)
 	x *= ((float)SCREEN_WIDTH / SCREEN_HEIGHT);
 
 	CRTVector direction(x, y, -1);
+	direction = direction * camera.getRotationMatrix();
 	direction.normalise();
-	return CRTRay(CRTVector(0, 0, 0), direction);
+	return CRTRay(camera.getPosition(), direction);
 }
 
 bool isPointInTriangle(const CRTVector& point, const CRTTriangle& triangle)
@@ -56,7 +58,7 @@ bool interesect(const CRTRay& ray, const CRTTriangle& triangle)
 		return false;
 	}
 
-	float rpDist = dot(triangle.getVertex(0), triangle.getNormal());
+	float rpDist = dot(triangle.getVertex(0) - ray.getOrigin(), triangle.getNormal());
 
 	//Back-face culling
 	if (rpDist >= 0)
@@ -67,7 +69,7 @@ bool interesect(const CRTRay& ray, const CRTTriangle& triangle)
 	float rProj = dot(ray.getDirection(), triangle.getNormal());
 
 	float t = abs(rpDist) / abs(rProj);
-	CRTVector p = t * ray.getDirection();
+	CRTVector p = ray.getOrigin() + t * ray.getDirection();
 
 	return isPointInTriangle(p, triangle);
 }
@@ -79,37 +81,55 @@ void writePixel(std::ofstream& ofs, const CRTVector& color)
 
 int main()
 {
-	std::ofstream ofs("t1.ppm");
+	/*std::ofstream ofs("camera.ppm");
 
 	ofs << "P3\n";
 	ofs << SCREEN_WIDTH << " " << SCREEN_HEIGHT << "\n";
-	ofs << 255 << "\n";
+	ofs << 255 << "\n";*/
 
 	CRTTriangle tri(
-	CRTVector(-1.75, -7.75, -6),
-	CRTVector(1.75, -1.75, -6),
-	CRTVector(0, 1.75, -6)
+	CRTVector(-1.75, -1.75, -4),
+	CRTVector(1.75, -1.75, -4),
+	CRTVector(0, 1.75, -4)
 	);
 
+	
+	//camera.panAroundTarget(30, CRTVector(0.f, -0.58, -4.f));
 	CRTVector triColor(255, 0, 0);
 	CRTVector backgroundColor(0, 255, 0);
 
-	for (int j = 0; j < SCREEN_HEIGHT; j++)
+	for (int t = 0; t < 9; t++)
 	{
-		for (int i = 0; i < SCREEN_WIDTH; i++)
-		{
-			CRTRay ray = genRay(i, j);
+		CRTCamera camera;
+		camera.panAroundTarget(40 * t, CRTVector(0.f, -0.58, -4.f));
+		char buffer[] = "animationX.ppm";
+		buffer[9] = '0' + t;
+		std::ofstream ofs(buffer);
 
-			if (interesect(ray, tri))
+		ofs << "P3\n";
+		ofs << SCREEN_WIDTH << " " << SCREEN_HEIGHT << "\n";
+		ofs << 255 << "\n";
+
+		std::cout << "Working on frame: " << t << std::endl;
+
+		for (int j = 0; j < SCREEN_HEIGHT; j++)
+		{
+			for (int i = 0; i < SCREEN_WIDTH; i++)
 			{
-				writePixel(ofs, triColor);
+				CRTRay ray = genRay(i, j, camera);
+
+				if (interesect(ray, tri))
+				{
+					writePixel(ofs, triColor);
+				}
+				else
+				{
+					writePixel(ofs, backgroundColor);
+				}
 			}
-			else
-			{
-				writePixel(ofs, backgroundColor);
-			}
+			ofs << "\n";
 		}
-		ofs << "\n";
+		ofs.close();
 	}
 
 }

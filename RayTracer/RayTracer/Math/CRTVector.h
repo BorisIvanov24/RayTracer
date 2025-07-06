@@ -12,6 +12,7 @@ public:
 	float getX() const;
 	float getY() const;
 	float getZ() const;
+	float getByIndex(int index) const;
 
 	friend CRTVector operator+(const CRTVector& lhs, const CRTVector& rhs);
 	friend CRTVector operator-(const CRTVector& lhs, const CRTVector& rhs);

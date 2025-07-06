@@ -38,6 +38,17 @@ float CRTVector::getZ() const
 	return z;
 }
 
+float CRTVector::getByIndex(int index) const
+{
+	if (index == 0)
+		return x;
+
+	if (index == 1)
+		return y;
+
+	return z;
+}
+
 CRTVector operator*(const CRTVector& vec, float scalar)
 {
 	return CRTVector(

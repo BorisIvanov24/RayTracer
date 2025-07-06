@@ -128,12 +128,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Application.cpp" />
+    <ClCompile Include="CRTCamera.cpp" />
     <ClCompile Include="Math\CRTRay.cpp" />
     <ClCompile Include="Math\CRTTriangle.cpp" />
     <ClCompile Include="Math\CRTMatrix.cpp" />
     <ClCompile Include="Math\CRTVector.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="CRTCamera.h" />
     <ClInclude Include="Math\CRTRay.h" />
     <ClInclude Include="Math\CRTTriangle.h" />
     <ClInclude Include="Math\CRTMatrix.h" />

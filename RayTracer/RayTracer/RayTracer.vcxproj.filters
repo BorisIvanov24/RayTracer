@@ -30,6 +30,9 @@
     <ClCompile Include="Math\CRTRay.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CRTCamera.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Math\CRTVector.h">
@@ -42,6 +45,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Math\CRTRay.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CRTCamera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
