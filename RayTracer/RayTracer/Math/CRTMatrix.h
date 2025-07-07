@@ -13,6 +13,7 @@ public:
 	friend CRTMatrix operator*(const CRTMatrix& lhs, const CRTMatrix& rhs);
 	friend CRTVector operator*(const CRTVector& lhs, const CRTMatrix& rhs);
 
+	void print() const;
 private:
 	float m[3][3];
 };

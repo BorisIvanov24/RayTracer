@@ -1,0 +1,33 @@
+#include "CRTScene.h"
+#include <fstream>
+#include <iostream>
+#include <assert.h>
+#include "CRTSceneParser.h"
+
+CRTScene::CRTScene(const std::string& sceneFileName)
+{
+	parseSceneFile(sceneFileName);
+}
+
+void CRTScene::parseSceneFile(const std::string& sceneFileName)
+{
+	CRTSceneParser::parseScene(sceneFileName, *this);
+
+}
+
+const CRTSettings& CRTScene::getSettings() const
+{
+	return settings;
+}
+
+const CRTCamera& CRTScene::getCamera() const
+{
+	return camera;
+}
+
+const std::vector<CRTMesh>& CRTScene::getObjects() const
+{
+	return geometryObjects;
+}
+
+

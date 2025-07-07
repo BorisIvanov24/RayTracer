@@ -1,4 +1,5 @@
 #include "CRTMatrix.h"
+#include <iostream>
 
 CRTMatrix operator*(const CRTMatrix& lhs, const CRTMatrix& rhs)
 {
@@ -55,4 +56,16 @@ CRTMatrix::CRTMatrix(float c00, float c01, float c02, float c10, float c11, floa
     m[2][0] = c20;
     m[2][1] = c21;
     m[2][2] = c22;
+}
+
+void CRTMatrix::print() const
+{
+    for (int i = 0; i < 3; i++)
+    {
+        for (int j = 0; j < 3; j++)
+        {
+            std::cout << m[i][j] << ' ';
+        }
+        std::cout << std::endl;
+    }
 }

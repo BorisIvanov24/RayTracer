@@ -1,5 +1,6 @@
 #include "CRTVector.h"
 #include <math.h>
+#include <iostream>
 
 CRTVector::CRTVector() : x(0.f), y(0.f), z(0.f)
 {
@@ -89,4 +90,9 @@ CRTVector operator*(float scalar, const CRTVector& vec)
 		vec.y * scalar,
 		vec.z * scalar
 	);
+}
+
+void CRTVector::print() const
+{
+	std::cout << "( " << x << ", " << y << ", " << z << " )" << std::endl;
 }

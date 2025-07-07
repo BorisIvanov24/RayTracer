@@ -24,6 +24,7 @@ public:
 	friend CRTVector cross(const CRTVector& lhs, const CRTVector& rhs);
 	friend float dot(const CRTVector& lhs, const CRTVector& rhs);
 
+	void print() const;
 private:
 	float x, y, z;
 };

@@ -14,6 +14,8 @@ public:
 	const CRTVector& getPosition() const;
 	const CRTMatrix& getRotationMatrix() const;
 
+	void setRotationMatrix(const CRTMatrix& matrix);
+	void setPosition(const CRTVector& position);
 private:
 	CRTMatrix rotationMatrix;
 

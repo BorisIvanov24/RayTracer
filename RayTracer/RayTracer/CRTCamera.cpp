@@ -41,33 +41,21 @@ void CRTCamera::roll(const float degrees)
 
 void CRTCamera::panAroundTarget(const float degrees, const CRTVector& target)
 {
-	// Move camera around the target
+
 	CRTVector toCamera = position - target;
 
 	const float rads = degrees * (M_PI / 180.f);
-	CRTMatrix rotateAroundY(
+	const CRTMatrix rotateAroundY(
 		cosf(rads), 0.f, -sinf(rads),
 		0.f, 1.f, 0.f,
 		sinf(rads), 0.f, cosf(rads)
 	);
 
 	CRTVector rotated = toCamera * rotateAroundY;
+
 	position = target + rotated;
 
-	//  Here's the fix: always look at the target
-	CRTVector viewDir = target - position;
-	viewDir.normalise();
-
-	CRTVector up(0.f, 1.f, 0.f);
-	CRTVector right = cross(up, viewDir);
-	right.normalise();
-	CRTVector newUp = cross(viewDir, right);
-
-	rotationMatrix = CRTMatrix(
-		right.getX(), newUp.getX(), viewDir.getX(),
-		right.getY(), newUp.getY(), viewDir.getY(),
-		right.getZ(), newUp.getZ(), viewDir.getZ()
-	);
+	rotationMatrix = rotationMatrix * rotateAroundY;
 }
 
 
@@ -79,4 +67,14 @@ const CRTVector& CRTCamera::getPosition() const
 const CRTMatrix& CRTCamera::getRotationMatrix() const
 {
 	return rotationMatrix;
+}
+
+void CRTCamera::setRotationMatrix(const CRTMatrix& matrix)
+{
+	rotationMatrix = matrix;
+}
+
+void CRTCamera::setPosition(const CRTVector& position)
+{
+	this->position = position;
 }
