@@ -104,7 +104,7 @@ bool interesect(const CRTRay& ray, const CRTScene& scene, CRTVector& color)
 
 			CRTTriangle triangle(v0, v1, v2);
 			
-			//ray is parallel to the plane
+			//is ray parallel to the plane
 			if (abs(dot(ray.getDirection(), triangle.getNormal())) < 0.0001)
 			{
 				continue;
@@ -125,7 +125,7 @@ bool interesect(const CRTRay& ray, const CRTScene& scene, CRTVector& color)
 
 			if (isPointInTriangle(p, triangle))
 			{
-				/*rpDist = -rpDist;
+				rpDist = -rpDist;
 				if (minRpDist < 0)
 				{
 					minRpDist = rpDist;
@@ -138,9 +138,7 @@ bool interesect(const CRTRay& ray, const CRTScene& scene, CRTVector& color)
 						minRpDist = rpDist;
 						finalColor = triangleToColor(triangle.getVertex(0), triangle.getVertex(1), triangle.getVertex(2));
 					}
-				}*/
-				finalColor = triangleToColor(triangle.getVertex(0), triangle.getVertex(1), triangle.getVertex(2));
-				minRpDist = 1.f;
+				}
 			}
 
 		}
@@ -162,11 +160,6 @@ void writePixel(std::ofstream& ofs, const CRTVector& color)
 
 int main()
 {
-	CRTTriangle tri(
-		CRTVector(-1.75, -1.75, -4),
-		CRTVector(1.75, -1.75, -4),
-		CRTVector(0, 1.75, -4)
-	);
 
 	CRTScene scene("Scenes/scene4.crtscene");
 
@@ -177,8 +170,6 @@ int main()
 
 	SCREEN_WIDTH /= 10;
 	SCREEN_HEIGHT /= 10;
-
-	std::vector<CRTVector> colors;
 	
 	std::ofstream ofs("scene4Smaller.ppm");
 
