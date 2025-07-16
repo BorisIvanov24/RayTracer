@@ -12,7 +12,6 @@ CRTScene::CRTScene(const std::string& sceneFileName)
 void CRTScene::parseSceneFile(const std::string& sceneFileName)
 {
 	CRTSceneParser::parseScene(sceneFileName, *this);
-
 }
 
 const CRTSettings& CRTScene::getSettings() const

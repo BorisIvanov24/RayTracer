@@ -136,6 +136,7 @@
     <ClCompile Include="Math\CRTTriangle.cpp" />
     <ClCompile Include="Math\CRTMatrix.cpp" />
     <ClCompile Include="Math\CRTVector.cpp" />
+    <ClCompile Include="Renderer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CRTCamera.h" />
@@ -181,6 +182,7 @@
     <ClInclude Include="rapidjson\stream.h" />
     <ClInclude Include="rapidjson\stringbuffer.h" />
     <ClInclude Include="rapidjson\writer.h" />
+    <ClInclude Include="Renderer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
