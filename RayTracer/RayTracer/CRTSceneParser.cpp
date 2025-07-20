@@ -52,7 +52,7 @@ void CRTSceneParser::parseSettings(const Document& doc, CRTScene& scene)
 	}
 
 	//std::cout << scene.settings.imageWidth << ' ' << scene.settings.imageHeight << std::endl;
-	//scene.settings.backgroundColor.print();
+	//scene.settings.backgroundColor.print(std::cout);
 }
 
 void CRTSceneParser::parseCamera(const rapidjson::Document& doc, CRTScene& scene)
@@ -68,7 +68,7 @@ void CRTSceneParser::parseCamera(const rapidjson::Document& doc, CRTScene& scene
 		assert(!positionVal.IsNull() && positionVal.IsArray());
 		scene.camera.setPosition(loadVector(positionVal.GetArray(), 0));
 	}
-	//scene.camera.getPosition().print();
+	//scene.camera.getPosition().print(std::cout);
 	//scene.camera.getRotationMatrix().print();
 }
 

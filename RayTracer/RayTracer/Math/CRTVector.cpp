@@ -73,6 +73,13 @@ float dot(const CRTVector& lhs, const CRTVector& rhs)
 	return (lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z);
 }
 
+bool operator==(const CRTVector& lhs, const CRTVector& rhs) {
+	const float epsilon = 1e-6f;
+	return std::fabs(lhs.getX() - rhs.getX()) < epsilon &&
+		std::fabs(lhs.getY() - rhs.getY()) < epsilon &&
+		std::fabs(lhs.getZ() - rhs.getZ()) < epsilon;
+}
+
 CRTVector operator+(const CRTVector& lhs, const CRTVector& rhs)
 {
 	return CRTVector(lhs.x + rhs.x, lhs.y + rhs.y, lhs.z + rhs.z);
@@ -92,7 +99,7 @@ CRTVector operator*(float scalar, const CRTVector& vec)
 	);
 }
 
-void CRTVector::print() const
+void CRTVector::print(std::ostream& os) const
 {
-	std::cout << "( " << x << ", " << y << ", " << z << " )" << std::endl;
+	os << "( " << x << ", " << y << ", " << z << " )" << std::endl;
 }

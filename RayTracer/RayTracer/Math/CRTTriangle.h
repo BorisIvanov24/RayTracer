@@ -12,6 +12,9 @@ public:
 	const CRTVector& getNormal() const;
 
 	const CRTVector& getVertex(int index) const;
+
+	friend bool operator==(const CRTTriangle& lhs, const CRTTriangle& rhs);
+
 private:
 	void calculateNormal();
 

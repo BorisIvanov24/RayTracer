@@ -1,4 +1,6 @@
 #pragma once
+#include <fstream>
+
 class CRTVector
 {
 public:
@@ -23,8 +25,9 @@ public:
 
 	friend CRTVector cross(const CRTVector& lhs, const CRTVector& rhs);
 	friend float dot(const CRTVector& lhs, const CRTVector& rhs);
+	friend bool operator==(const CRTVector& lhs, const CRTVector& rhs);
 
-	void print() const;
+	void print(std::ostream& os) const;
 private:
 	float x, y, z;
 };

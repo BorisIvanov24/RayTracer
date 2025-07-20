@@ -15,7 +15,7 @@ void CRTMesh::print() const
 {
 	for (const auto& obj : vertices)
 	{
-		obj.print();
+		obj.print(std::cout);
 	}
 
 	for (int i=0;i<indices.size();i++)

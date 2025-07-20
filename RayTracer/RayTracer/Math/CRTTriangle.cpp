@@ -29,4 +29,7 @@ void CRTTriangle::calculateNormal()
 	normal.normalise();
 }
 
-
+bool operator==(const CRTTriangle& lhs, const CRTTriangle& rhs)
+{
+	return (lhs.verts[0] == rhs.verts[0] && lhs.verts[1] == rhs.verts[1] && lhs.verts[2] == rhs.verts[2]);
+}

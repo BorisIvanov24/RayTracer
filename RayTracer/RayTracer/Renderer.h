@@ -8,9 +8,10 @@ class Renderer
 {
 public:
 	static void renderScene(const CRTScene& scene, const std::string& outputFile);
+	static void renderAnimation(const CRTScene& scene, const std::string& outputFile);
 private:
 	static CRTRay genRay(int x, int y, const CRTCamera& camera, int imageWidth, int imageHeight);
-	static bool interesect(const CRTRay& ray, const CRTScene& scene, CRTVector& color);
+	static bool intersect(const CRTRay& ray, const CRTScene& scene, CRTVector& color, int i, int j);
 	static bool isPointInTriangle(const CRTVector& point, const CRTTriangle& triangle);
 };
 
