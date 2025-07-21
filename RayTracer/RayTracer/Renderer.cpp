@@ -14,6 +14,12 @@ int scaleTo255(float value, float minVal, float maxVal) {
     return static_cast<int>(clamp(normalized * 255.0f, 0.0f, 255.0f));
 }
 
+int floatToUint8(float value) {
+    // Clamp value to [0.0f, 1.0f]
+    value = std::max(0.0f, std::min(1.0f, value));
+    return static_cast<int>(std::round(value * 255.0f));
+}
+
 // Function to convert triangle to RGB color
 CRTVector triangleToColor(const CRTVector& p1, const CRTVector& p2, const CRTVector& p3) {
     // Compute centroid
@@ -38,9 +44,9 @@ CRTVector genRandomColor() {
 
 
 void writePixel(std::ofstream& ofs, const CRTVector& color) {
-    int r = clamp((int)color.getX(), 0, 255);
-    int g = clamp((int)color.getY(), 0, 255);
-    int b = clamp((int)color.getZ(), 0, 255);
+    int r = clamp(floatToUint8(color.getX()), 0, 255);
+    int g = clamp(floatToUint8(color.getY()), 0, 255);
+    int b = clamp(floatToUint8(color.getZ()), 0, 255);
     ofs << r << ' ' << g << ' ' << b << '\t';
 }
 
@@ -80,6 +86,78 @@ void Renderer::renderScene(const CRTScene& scene, const std::string& outputFile)
     ofs.close();
 }
 
+CRTVector Renderer::handleShadowRays(const RayIntersectionData& data, const CRTScene& scene)
+{
+    const float shadowBias = 1e-2f;
+
+    CRTVector finalColor(0.f, 0.f, 0.f);
+    CRTVector albedo(0.f, 1.f, 0.f);
+
+    for (int i = 0; i < scene.getLights().size(); i++)
+    {
+        const CRTLight& light = scene.getLights()[i];
+
+        CRTVector intersectionPoint = data.intersectionPoint;
+        CRTVector lightPosition = light.getPosition();
+        CRTTriangle intersectionTriangle = data.intersectionTriangle;
+
+        CRTVector lightDir = lightPosition - intersectionPoint;
+        float sphereRadius = lightDir.length();
+
+        lightDir.normalise();
+
+        float cosLaw = std::max(0.f, dot(lightDir, intersectionTriangle.getNormal()));
+        float sphereArea = 4 * 3.14 * sphereRadius * sphereRadius;
+
+        CRTRay shadowRay(intersectionPoint + intersectionTriangle.getNormal() * shadowBias, lightDir);
+        RayIntersectionData shadowRayData = traceRay(shadowRay, scene);
+
+        CRTVector lightContribution = shadowRayData.isIntersected ? CRTVector() : 
+                                      light.getIntensity() / sphereArea * albedo * cosLaw;
+
+        finalColor = finalColor + lightContribution;
+    }
+
+    return finalColor;
+}
+
+void Renderer::renderSceneLight(const CRTScene& scene, const std::string& outputFile)
+{
+    int screenWidth = scene.getSettings().imageWidth / 2;
+    int screenHeight = scene.getSettings().imageHeight / 2;
+
+    std::ofstream ofs(outputFile);
+    ofs << "P3\n" << screenWidth << " " << screenHeight << "\n255\n";
+
+    for (int j = 0; j < screenHeight; j++) {
+
+        if (j % (screenHeight / 100) == 0)
+            std::cout << (j / (screenHeight / 100)) << "%\n";
+
+        for (int i = 0; i < screenWidth; i++) {
+
+            CRTRay ray = genRay(i, j, scene.getCamera(), screenWidth, screenHeight);
+            
+            RayIntersectionData data = traceRay(ray, scene);
+
+            if (data.isIntersected)
+            {
+                CRTVector finalColor = handleShadowRays(data, scene);
+                //finalColor.print(std::cout);
+                writePixel(ofs, finalColor);
+            }
+            else
+            {
+                writePixel(ofs, scene.getSettings().backgroundColor);
+            }
+            
+        }
+        ofs << "\n";
+    }
+    std::cout << "100%\n";
+    ofs.close();
+}
+
 void Renderer::renderAnimation(const CRTScene& scene, const std::string& outputFile) {
     int screenWidth = scene.getSettings().imageWidth / 2;
     int screenHeight = scene.getSettings().imageHeight / 2;
@@ -109,6 +187,51 @@ void Renderer::renderAnimation(const CRTScene& scene, const std::string& outputF
             }
             ofs << "\n";
         }
+        std::cout << "100%\n";
+        ofs.close();
+    }
+}
+
+void Renderer::renderAnimationLight(const CRTScene& scene, const std::string& outputFile)
+{
+    int screenWidth = scene.getSettings().imageWidth / 2;
+    int screenHeight = scene.getSettings().imageHeight / 2;
+
+    for (int k = 0; k < 6; k++) {
+        CRTCamera camera = scene.getCamera();
+        //camera.panAroundTarget(k * 60, CRTVector(0.f, 0.f, -3.f));
+        camera.pan(k * 60);
+
+
+        std::ofstream ofs(outputFile + static_cast<char>('0' + k) + ".ppm");
+        ofs << "P3\n" << screenWidth << " " << screenHeight << "\n255\n";
+
+        for (int j = 0; j < screenHeight; j++) {
+
+            if (j % (screenHeight / 100) == 0)
+                std::cout << (j / (screenHeight / 100)) << "%\n";
+
+            for (int i = 0; i < screenWidth; i++) {
+
+                CRTRay ray = genRay(i, j, camera, screenWidth, screenHeight);
+
+                RayIntersectionData data = traceRay(ray, scene);
+
+                if (data.isIntersected)
+                {
+                    CRTVector finalColor = handleShadowRays(data, scene);
+                    //finalColor.print(std::cout);
+                    writePixel(ofs, finalColor);
+                }
+                else
+                {
+                    writePixel(ofs, scene.getSettings().backgroundColor);
+                }
+
+            }
+            ofs << "\n";
+        }
+        
         std::cout << "100%\n";
         ofs.close();
     }
@@ -154,6 +277,70 @@ bool Renderer::isPointInTriangle(const CRTVector& point, const CRTTriangle& tria
 
     return true;
 }
+
+RayIntersectionData Renderer::traceRay(const CRTRay& ray, const CRTScene& scene)
+{
+    float minT = -1.0f;
+    CRTTriangle minTriangle;
+
+    for (size_t i = 0; i < scene.getObjects().size(); i++) {
+        const auto& object = scene.getObjects()[i];
+        const auto& vertices = object.getVertices();
+        const auto& indices = object.getIndices();
+
+        for (size_t j = 0; j + 2 < indices.size(); j += 3) {
+            size_t idx0 = indices[j];
+            size_t idx1 = indices[j + 1];
+            size_t idx2 = indices[j + 2];
+
+            // Bounds check
+            if (idx0 >= vertices.size() || idx1 >= vertices.size() || idx2 >= vertices.size())
+                continue;
+
+            CRTVector v0 = vertices[idx0];
+            CRTVector v1 = vertices[idx1];
+            CRTVector v2 = vertices[idx2];
+
+            // Degenerate triangle check
+            if ((v1 - v0).length() < 1e-6f || (v2 - v1).length() < 1e-6f || (v0 - v2).length() < 1e-6f)
+                continue;
+
+            CRTTriangle triangle(v0, v1, v2);
+
+            float rProj = dot(ray.getDirection(), triangle.getNormal());
+
+            if (std::abs(rProj) < 0.0001f)
+                continue;  // Parallel
+
+            float rpDist = dot(triangle.getVertex(0) - ray.getOrigin(), triangle.getNormal());
+
+            float t = rpDist / rProj;
+
+            if (t < 0.f)
+                continue;
+
+            CRTVector p = ray.getOrigin() + t * ray.getDirection();
+
+            if (isPointInTriangle(p, triangle)) {
+
+                rpDist = std::abs(rpDist);
+                if (minT < 0 || t < minT) {
+                    minT = t;
+                    minTriangle = triangle;
+                }
+            }
+        }
+    }
+
+    if (minT < 0)
+    {
+        return { false, CRTVector(), minTriangle};
+    }
+
+    CRTVector intersectionPoint = ray.getOrigin() + minT * ray.getDirection();
+    return { true, intersectionPoint, minTriangle};
+}
+
 
 bool Renderer::intersect(const CRTRay& ray, const CRTScene& scene, CRTVector& color, int k, int l) {
     float minRpDist = -1.0f;

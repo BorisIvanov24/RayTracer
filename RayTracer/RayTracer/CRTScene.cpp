@@ -29,4 +29,9 @@ const std::vector<CRTMesh>& CRTScene::getObjects() const
 	return geometryObjects;
 }
 
+const std::vector<CRTLight>& CRTScene::getLights() const
+{
+	return lights;
+}
+
 

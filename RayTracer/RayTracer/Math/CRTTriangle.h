@@ -8,6 +8,7 @@ public:
 	static constexpr int vertsInTriangle = 3;
 
 	CRTTriangle(const CRTVector& v0, const CRTVector& v1, const CRTVector& v2);
+	CRTTriangle() = default;
 
 	const CRTVector& getNormal() const;
 

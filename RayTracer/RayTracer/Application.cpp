@@ -20,8 +20,8 @@ int main()
 		scene.getObjects()[i].print();
 	}*/
 
-
-	Renderer::renderScene(scene, "testImage.ppm");
+	Renderer::renderAnimationLight(scene, "scene3_Lec8.ppm");
+	//Renderer::renderScene(scene, "testImage.ppm");
 	//Renderer::renderAnimation(scene, "anim.ppm");
 
 }

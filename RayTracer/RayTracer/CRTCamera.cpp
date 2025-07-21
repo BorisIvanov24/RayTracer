@@ -2,6 +2,7 @@
 
 #include "CRTCamera.h"
 #include <cmath>
+#include "CRTLight.h"
 
 void CRTCamera::pan(const float degrees)
 {
@@ -57,7 +58,6 @@ void CRTCamera::panAroundTarget(const float degrees, const CRTVector& target)
 
 	rotationMatrix = rotationMatrix * rotateAroundY;
 }
-
 
 const CRTVector& CRTCamera::getPosition() const
 {

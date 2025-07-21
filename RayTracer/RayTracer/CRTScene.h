@@ -2,6 +2,7 @@
 #include <string>
 #include "CRTMesh.h"
 #include "CRTCamera.h"
+#include "CRTLight.h"
 
 struct CRTSettings
 {
@@ -21,11 +22,13 @@ public:
 	const CRTSettings& getSettings() const;
 	const CRTCamera& getCamera() const;
 	const std::vector<CRTMesh>& getObjects() const;
+	const std::vector<CRTLight>& getLights() const;
 
 private:
 	std::vector<CRTMesh> geometryObjects;
 	CRTCamera camera;
 	CRTSettings settings;
+	std::vector<CRTLight> lights;
 	
 };
 

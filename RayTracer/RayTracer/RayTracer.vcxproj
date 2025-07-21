@@ -129,6 +129,7 @@
   <ItemGroup>
     <ClCompile Include="Application.cpp" />
     <ClCompile Include="CRTCamera.cpp" />
+    <ClCompile Include="CRTLight.cpp" />
     <ClCompile Include="CRTMesh.cpp" />
     <ClCompile Include="CRTScene.cpp" />
     <ClCompile Include="CRTSceneParser.cpp" />
@@ -140,6 +141,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CRTCamera.h" />
+    <ClInclude Include="CRTLight.h" />
     <ClInclude Include="CRTMesh.h" />
     <ClInclude Include="CRTScene.h" />
     <ClInclude Include="CRTSceneParser.h" />

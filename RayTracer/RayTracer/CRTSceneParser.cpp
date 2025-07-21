@@ -116,7 +116,49 @@ void CRTSceneParser::parseObjects(const rapidjson::Document& doc, CRTScene& scen
 			parseMesh(mesh, scene);
 		}
 	}
+}
 
+
+void CRTSceneParser::parseLights(const rapidjson::Document& doc, CRTScene& scene)
+{
+	const Value& lightsVal = doc.FindMember("lights")->value;
+
+	if (!lightsVal.IsNull() && lightsVal.IsArray())
+	{
+		int lightsCount = lightsVal.GetArray().Size();
+
+		for (int i = 0; i < lightsCount; i++)
+		{
+			const Value& light = lightsVal.GetArray()[i];
+			parseLight(light, scene);
+		}
+	}
+}
+
+void CRTSceneParser::parseLight(const rapidjson::Value& val, CRTScene& scene)
+{
+	CRTVector position;
+	float intensity = 0.f;
+
+	const Value& positionVal = val.FindMember("position")->value;
+	if (!positionVal.IsNull() && positionVal.IsArray())
+	{
+		position = loadVector(positionVal.GetArray(), 0);
+	}
+
+	const Value& intensityVal = val.FindMember("intensity")->value;
+	if (!intensityVal.IsNull())
+	{
+		intensity = intensityVal.GetFloat();
+	}
+
+	CRTLight light(position, intensity);
+
+	/*std::cout << "light:\n";
+	position.print(std::cout);
+	std::cout << intensity << std::endl;*/
+
+	scene.lights.push_back(light);
 }
 
 void CRTSceneParser::parseScene(const std::string& sceneFileName, CRTScene& scene)
@@ -131,6 +173,7 @@ void CRTSceneParser::parseScene(const std::string& sceneFileName, CRTScene& scen
 	parseSettings(doc, scene);
 	parseCamera(doc, scene);
 	parseObjects(doc, scene);
+	parseLights(doc, scene);
 
 	/*for (auto& obj : scene.geometryObjects)
 	{
