@@ -34,4 +34,9 @@ const std::vector<CRTLight>& CRTScene::getLights() const
 	return lights;
 }
 
+const std::vector<CRTMaterial>& CRTScene::getMaterials() const
+{
+	return materials;
+}
+
 

@@ -3,6 +3,7 @@
 #include "CRTMesh.h"
 #include "CRTCamera.h"
 #include "CRTLight.h"
+#include "CRTMaterial.h"
 
 struct CRTSettings
 {
@@ -23,12 +24,14 @@ public:
 	const CRTCamera& getCamera() const;
 	const std::vector<CRTMesh>& getObjects() const;
 	const std::vector<CRTLight>& getLights() const;
+	const std::vector<CRTMaterial>& getMaterials() const;
 
 private:
 	std::vector<CRTMesh> geometryObjects;
 	CRTCamera camera;
 	CRTSettings settings;
 	std::vector<CRTLight> lights;
+	std::vector<CRTMaterial> materials;
 	
 };
 

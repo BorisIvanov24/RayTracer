@@ -15,6 +15,9 @@ private:
 	static void parseLights(const rapidjson::Document& doc, CRTScene& scene);
 	static void parseLight(const rapidjson::Value& val, CRTScene& scene);
 
+	static void parseMaterials(const rapidjson::Document& doc, CRTScene& scene);
+	static void parseMaterial(const rapidjson::Value& val, CRTScene& scene);
+
 public:
 	static void parseScene(const std::string& sceneFileName, CRTScene& scene);
 };

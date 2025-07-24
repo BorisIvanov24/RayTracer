@@ -91,7 +91,9 @@ CRTVector Renderer::handleShadowRays(const RayIntersectionData& data, const CRTS
     const float shadowBias = 1e-2f;
 
     CRTVector finalColor(0.f, 0.f, 0.f);
-    CRTVector albedo(0.f, 1.f, 0.f);
+    CRTVector albedo = data.material->getAlbedo();
+
+    CRTVector normal = data.material->isSmoothShading() ? data.intersectionPointNormal : data.intersectionTriangle.getNormal();
 
     for (int i = 0; i < scene.getLights().size(); i++)
     {
@@ -106,7 +108,7 @@ CRTVector Renderer::handleShadowRays(const RayIntersectionData& data, const CRTS
 
         lightDir.normalise();
 
-        float cosLaw = std::max(0.f, dot(lightDir, intersectionTriangle.getNormal()));
+        float cosLaw = std::max(0.f, dot(lightDir, normal));
         float sphereArea = 4 * 3.14 * sphereRadius * sphereRadius;
 
         CRTRay shadowRay(intersectionPoint + intersectionTriangle.getNormal() * shadowBias, lightDir);
@@ -121,10 +123,86 @@ CRTVector Renderer::handleShadowRays(const RayIntersectionData& data, const CRTS
     return finalColor;
 }
 
+CRTVector Renderer::calculatePointNormal(const CRTVector& point, const CRTMesh& mesh, int idx0, int idx1, int idx2)
+{
+    CRTVector v0Normal = mesh.getVertexNormals()[idx0];
+    CRTVector v1Normal = mesh.getVertexNormals()[idx1];
+    CRTVector v2Normal = mesh.getVertexNormals()[idx2];
+
+    CRTVector v0 = mesh.getVertices()[idx0];
+    CRTVector v1 = mesh.getVertices()[idx1];
+    CRTVector v2 = mesh.getVertices()[idx2];
+
+    CRTVector v0v2 = v2 - v0;
+    CRTVector v0v1 = v1 - v0;
+    CRTVector v0P = point - v0;
+
+    float u = cross(v0P, v0v2).length() / cross(v0v1, v0v2).length();
+    float v = cross(v0v1, v0P).length() / cross(v0v1, v0v2).length();
+
+    CRTVector pointNormal = v1Normal * u + v2Normal * v + v0Normal * (1 - u - v);
+
+    return pointNormal;
+}
+
+CRTVector multiplyColors(const CRTVector& lhs, const CRTVector& rhs)
+{
+    return { lhs.getX() * rhs.getX(), lhs.getY() * rhs.getY(), lhs.getZ() * rhs.getZ() };
+}
+
+RayIntersectionData Renderer::traceReflectionRay(const CRTRay& ray, const RayIntersectionData& data,
+                                                 const CRTScene& scene, int depth)
+{
+    if (depth > MAX_REFLECTION_RAY_DEPTH)
+    {
+        RayIntersectionData toReturn;
+        toReturn.isIntersected = false;
+        toReturn.color = scene.getSettings().backgroundColor;
+        toReturn.color = multiplyColors(toReturn.color, data.material->getAlbedo());
+        return toReturn;
+    }
+
+    CRTVector normal = data.intersectionPointNormal;
+
+    CRTVector rayDir = ray.getDirection();
+    rayDir.normalise();
+
+    CRTVector reflectionRayDir = rayDir - 2 * dot(rayDir, normal) * normal;
+
+    CRTRay reflectionRay(data.intersectionPoint + normal * 1e-2f, reflectionRayDir);
+
+    RayIntersectionData reflectionRayData = traceRay(reflectionRay, scene);
+
+    if (!reflectionRayData.isIntersected)
+    {
+        RayIntersectionData toReturn;
+        toReturn.isIntersected = false;
+        toReturn.color = scene.getSettings().backgroundColor;
+        toReturn.color = multiplyColors(toReturn.color, data.material->getAlbedo());
+        return toReturn;
+    }
+
+    if (reflectionRayData.isIntersected)
+    {
+        if (reflectionRayData.material->getType() == MaterialType::DIFFUSE)
+        {
+            CRTVector finalColor = handleShadowRays(reflectionRayData, scene);
+            reflectionRayData.color = finalColor;
+            reflectionRayData.color = multiplyColors(reflectionRayData.color, data.material->getAlbedo());
+            return reflectionRayData;
+        }
+    }
+
+    RayIntersectionData toReturn = traceReflectionRay(reflectionRay, reflectionRayData, scene, depth + 1);
+    toReturn.color = multiplyColors(toReturn.color, data.color);
+
+    return toReturn;
+}
+
 void Renderer::renderSceneLight(const CRTScene& scene, const std::string& outputFile)
 {
-    int screenWidth = scene.getSettings().imageWidth / 2;
-    int screenHeight = scene.getSettings().imageHeight / 2;
+    int screenWidth = scene.getSettings().imageWidth;
+    int screenHeight = scene.getSettings().imageHeight;
 
     std::ofstream ofs(outputFile);
     ofs << "P3\n" << screenWidth << " " << screenHeight << "\n255\n";
@@ -142,9 +220,26 @@ void Renderer::renderSceneLight(const CRTScene& scene, const std::string& output
 
             if (data.isIntersected)
             {
-                CRTVector finalColor = handleShadowRays(data, scene);
-                //finalColor.print(std::cout);
-                writePixel(ofs, finalColor);
+                if (data.material->getType() == MaterialType::DIFFUSE)
+                {
+                    CRTVector finalColor = handleShadowRays(data, scene);
+                    writePixel(ofs, finalColor);
+                }
+                else
+                {
+                    RayIntersectionData reflectionRayData = traceReflectionRay(ray, data, scene, 1);
+
+                    if (!reflectionRayData.isIntersected)
+                    {
+                        writePixel(ofs, reflectionRayData.color);
+                    }
+                    else
+                    {
+                        CRTVector finalColor = handleShadowRays(reflectionRayData, scene);
+                        writePixel(ofs, finalColor);
+                    }
+                }
+                
             }
             else
             {
@@ -197,13 +292,14 @@ void Renderer::renderAnimationLight(const CRTScene& scene, const std::string& ou
     int screenWidth = scene.getSettings().imageWidth / 2;
     int screenHeight = scene.getSettings().imageHeight / 2;
 
-    for (int k = 0; k < 6; k++) {
+    for (int k = 15; k < 16; k++) {
         CRTCamera camera = scene.getCamera();
-        //camera.panAroundTarget(k * 60, CRTVector(0.f, 0.f, -3.f));
-        camera.pan(k * 60);
+        camera.panAroundTarget(k * 20, CRTVector(0.f, -5.f, 0.f));
+        //camera.pan(k * 60);
 
-
-        std::ofstream ofs(outputFile + static_cast<char>('0' + k) + ".ppm");
+        
+        std::ofstream ofs(outputFile + "15.ppm");
+        //std::ofstream ofs(outputFile + static_cast<char>('0' + k) + ".ppm");
         ofs << "P3\n" << screenWidth << " " << screenHeight << "\n255\n";
 
         for (int j = 0; j < screenHeight; j++) {
@@ -219,9 +315,26 @@ void Renderer::renderAnimationLight(const CRTScene& scene, const std::string& ou
 
                 if (data.isIntersected)
                 {
-                    CRTVector finalColor = handleShadowRays(data, scene);
-                    //finalColor.print(std::cout);
-                    writePixel(ofs, finalColor);
+                    if (data.material->getType() == MaterialType::DIFFUSE)
+                    {
+                        CRTVector finalColor = handleShadowRays(data, scene);
+                        writePixel(ofs, finalColor);
+                    }
+                    else
+                    {
+                        RayIntersectionData reflectionRayData = traceReflectionRay(ray, data, scene, 1);
+
+                        if (!reflectionRayData.isIntersected)
+                        {
+                            writePixel(ofs, reflectionRayData.color);
+                        }
+                        else
+                        {
+                            CRTVector finalColor = handleShadowRays(reflectionRayData, scene);
+                            writePixel(ofs, finalColor);
+                        }
+                    }
+
                 }
                 else
                 {
@@ -280,8 +393,8 @@ bool Renderer::isPointInTriangle(const CRTVector& point, const CRTTriangle& tria
 
 RayIntersectionData Renderer::traceRay(const CRTRay& ray, const CRTScene& scene)
 {
-    float minT = -1.0f;
-    CRTTriangle minTriangle;
+    MinData minData;
+    minData.t = -1.0f;
 
     for (size_t i = 0; i < scene.getObjects().size(); i++) {
         const auto& object = scene.getObjects()[i];
@@ -324,21 +437,30 @@ RayIntersectionData Renderer::traceRay(const CRTRay& ray, const CRTScene& scene)
             if (isPointInTriangle(p, triangle)) {
 
                 rpDist = std::abs(rpDist);
-                if (minT < 0 || t < minT) {
-                    minT = t;
-                    minTriangle = triangle;
+                if (minData.t < 0 || t < minData.t) {
+                    minData.t = t;
+                    minData.triangle = triangle;
+                    minData.mesh = &object;
+                    minData.idx0 = idx0;
+                    minData.idx1 = idx1;
+                    minData.idx2 = idx2;
                 }
             }
         }
     }
 
-    if (minT < 0)
+    if (minData.t < 0)
     {
-        return { false, CRTVector(), minTriangle};
+        return { false, CRTVector(), minData.triangle};
     }
 
-    CRTVector intersectionPoint = ray.getOrigin() + minT * ray.getDirection();
-    return { true, intersectionPoint, minTriangle};
+    CRTVector intersectionPoint = ray.getOrigin() + minData.t * ray.getDirection();
+
+    CRTVector pointNormal = calculatePointNormal(intersectionPoint, *minData.mesh,
+                                                 minData.idx0, minData.idx1, minData.idx2);
+    const CRTMaterial* material = &scene.getMaterials()[minData.mesh->getMaterialIndex()];
+
+    return { true, intersectionPoint, minData.triangle, pointNormal, material};
 }
 
 

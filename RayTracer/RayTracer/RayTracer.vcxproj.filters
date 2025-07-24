@@ -48,6 +48,9 @@
     <ClCompile Include="CRTLight.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CRTMaterial.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Math\CRTVector.h">
@@ -183,6 +186,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="CRTLight.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CRTMaterial.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

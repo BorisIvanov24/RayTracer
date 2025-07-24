@@ -5,7 +5,7 @@
 
 int main()
 {
-	CRTScene scene("Scenes/scene3_Lec8.crtscene");
+	CRTScene scene("Scenes/scene5_Lec9.crtscene");
 
 	/*scene.getCamera().getPosition().print(std::cout);
 	scene.getCamera().getRotationMatrix().print();
@@ -20,8 +20,9 @@ int main()
 		scene.getObjects()[i].print();
 	}*/
 
-	Renderer::renderAnimationLight(scene, "scene3_Lec8.ppm");
+	//Renderer::renderAnimationLight(scene, "dragonAnim/scene5_Lec9.ppm");
 	//Renderer::renderScene(scene, "testImage.ppm");
+	Renderer::renderSceneLight(scene, "scene5_Lec9.ppm");
 	//Renderer::renderAnimation(scene, "anim.ppm");
 
 }
