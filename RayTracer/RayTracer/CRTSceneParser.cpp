@@ -187,26 +187,60 @@ void CRTSceneParser::parseMaterials(const rapidjson::Document& doc, CRTScene& sc
 	}
 }
 
-static MaterialType getMaterialTypeFromString(const std::string& str)
+static CRTMaterialType getMaterialTypeFromString(const std::string& str)
 {
 	if (str == "diffuse")
 	{
-		return MaterialType::DIFFUSE;
+		return CRTMaterialType::DIFFUSE;
+	}
+	
+	if (str == "reflective")
+	{
+		return CRTMaterialType::REFLECTIVE;
 	}
 
-	return MaterialType::REFLECTIVE;
+	if (str == "constant")
+	{
+		return CRTMaterialType::CONSTANT;
+	}
+
+	return CRTMaterialType::REFRACTIVE;
 }
 
 void CRTSceneParser::parseMaterial(const rapidjson::Value& val, CRTScene& scene)
 {
-	MaterialType type;
+	CRTMaterialType type;
 	CRTVector albedo;
 	bool smoothShading;
+	float ior;
+	CRTMaterial material;
 
-	const Value& albedoVal = val.FindMember("albedo")->value;
-	if (!albedoVal.IsNull() && albedoVal.IsArray())
+	const Value& typeVal = val.FindMember("type")->value;
+	if (!typeVal.IsNull())
 	{
-		albedo = loadVector(albedoVal.GetArray(), 0);
+		type = getMaterialTypeFromString(typeVal.GetString());
+		material.setType(type);
+	}
+
+	if (type == CRTMaterialType::REFRACTIVE)
+	{
+		const Value& iorVal = val.FindMember("ior")->value;
+		if (!iorVal.IsNull())
+		{
+			ior = iorVal.GetFloat();
+		}
+		material.setIor(ior);
+		albedo = CRTVector(1.f, 1.f, 1.f);
+		material.setAlbedo(albedo);
+	}
+	else
+	{
+		const Value& albedoVal = val.FindMember("albedo")->value;
+		if (!albedoVal.IsNull() && albedoVal.IsArray())
+		{
+			albedo = loadVector(albedoVal.GetArray(), 0);
+		}
+		material.setAlbedo(albedo);
 	}
 
 	const Value& smoothShadingVal = val.FindMember("smooth_shading")->value;
@@ -214,27 +248,19 @@ void CRTSceneParser::parseMaterial(const rapidjson::Value& val, CRTScene& scene)
 	{
 		smoothShading = smoothShadingVal.GetBool();
 	}
+	material.setSmoothShading(smoothShading);
 
-	const Value& typeVal = val.FindMember("type")->value;
-	if (!typeVal.IsNull())
-	{
-		type = getMaterialTypeFromString(typeVal.GetString());
-	}
+	scene.materials.push_back(material);
+
 
 	/*std::cout << "albedo:\n ";
 	albedo.print(std::cout);
 	std::cout << "smooth_shading:\n";
 	std::cout << smoothShading <<std::endl;
 	std::cout << "type\n";
-	std::cout << (int)type << std::endl;*/
-
-
-	CRTMaterial material;
-	material.setAlbedo(albedo);
-	material.setSmoothShading(smoothShading);
-	material.setType(type);
-
-	scene.materials.push_back(material);
+	std::cout << (int)type << std::endl;
+	std::cout << "ior:\n";
+	std::cout << ior << std::endl;*/
 }
 
 void CRTSceneParser::parseScene(const std::string& sceneFileName, CRTScene& scene)

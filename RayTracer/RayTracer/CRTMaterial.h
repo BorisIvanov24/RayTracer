@@ -1,26 +1,32 @@
 #pragma once
 #include "Math/CRTVector.h"
 
-enum class MaterialType
+enum class CRTMaterialType
 {
+	INVALID,
 	DIFFUSE,
-	REFLECTIVE
+	REFLECTIVE,
+	REFRACTIVE,
+	CONSTANT
 };
 
 class CRTMaterial
 {
 public: 
-	MaterialType getType() const;
+	CRTMaterialType getType() const;
 	const CRTVector& getAlbedo() const;
 	bool isSmoothShading() const;
+	float getIor() const;
 
-	void setType(MaterialType type);
+	void setType(CRTMaterialType type);
 	void setAlbedo(const CRTVector& albedo);
 	void setSmoothShading(bool smoothShading);
+	void setIor(float ior);
 
 private:
-	MaterialType type;
+	CRTMaterialType type;
 	CRTVector albedo;
 	bool smoothShading;
+	float ior;
 };
 

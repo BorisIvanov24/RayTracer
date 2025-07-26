@@ -12,6 +12,8 @@ struct RayIntersectionData
 	CRTVector intersectionPointNormal;
 	const CRTMaterial* material = nullptr;
 	CRTVector color;
+	int objectIdx = -1;
+	int triangleIdx = -1;
 };
 
 struct MinData
@@ -27,21 +29,29 @@ struct MinData
 class Renderer
 {
 public:
-	static void renderScene(const CRTScene& scene, const std::string& outputFile);
-	static void renderSceneLight(const CRTScene& scene, const std::string& outputFile);
-	static void renderAnimation(const CRTScene& scene, const std::string& outputFile);
-	static void renderAnimationLight(const CRTScene& scene, const std::string& outputFile);
+	Renderer(const CRTScene* scene);
+	//static void renderAnimationLight(const CRTScene& scene, const std::string& outputFile);
+	void renderScene(const std::string& outputFile);
 
-	static const int MAX_REFLECTION_RAY_DEPTH = 5;
+	static const int MAX_RAY_DEPTH = 5;
 private:
-	static CRTRay genRay(int x, int y, const CRTCamera& camera, int imageWidth, int imageHeight);
-	static bool intersect(const CRTRay& ray, const CRTScene& scene, CRTVector& color, int i, int j);
-	static bool isPointInTriangle(const CRTVector& point, const CRTTriangle& triangle);
-	static RayIntersectionData traceRay(const CRTRay& ray, const CRTScene& scene);
-	static CRTVector handleShadowRays(const RayIntersectionData& data, const CRTScene& scene);
+	const CRTScene* scene = nullptr;
 
-	static CRTVector calculatePointNormal(const CRTVector& point, const CRTMesh& mesh, int idx0, int idx1, int idx2);
-	static RayIntersectionData traceReflectionRay(const CRTRay& ray, const RayIntersectionData& data, const CRTScene& scene, int depth);
+	CRTRay genRay(int x, int y, const CRTCamera& camera, int imageWidth, int imageHeight);
+
+	RayIntersectionData traceRay(const CRTRay& ray, float maxT = std::numeric_limits<float>::infinity());
+
+	bool isPointInTriangle(const CRTVector& point, const CRTTriangle& triangle);
+	
+	CRTVector calculatePointNormal(const CRTVector& point, const CRTMesh& mesh, int idx0, int idx1, int idx2);
+
+	CRTVector shade(const CRTRay& ray, const RayIntersectionData& data);
+
+	CRTVector shadeDiffuse(const CRTRay& ray, const RayIntersectionData& data);
+	CRTVector shadeReflective(const CRTRay& ray, const RayIntersectionData& data);
+	CRTVector shadeRefractive(const CRTRay& ray, const RayIntersectionData& data);
+	CRTVector shadeConstant(const CRTRay& ray, const RayIntersectionData& data);
+
 
 };
 

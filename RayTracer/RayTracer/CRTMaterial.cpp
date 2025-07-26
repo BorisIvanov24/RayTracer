@@ -1,6 +1,6 @@
 #include "CRTMaterial.h"
 
-MaterialType CRTMaterial::getType() const
+CRTMaterialType CRTMaterial::getType() const
 {
     return type;
 }
@@ -15,7 +15,12 @@ bool CRTMaterial::isSmoothShading() const
     return smoothShading;
 }
 
-void CRTMaterial::setType(MaterialType type)
+float CRTMaterial::getIor() const
+{
+    return ior;
+}
+
+void CRTMaterial::setType(CRTMaterialType type)
 {
     this->type = type;
 }
@@ -28,4 +33,9 @@ void CRTMaterial::setAlbedo(const CRTVector& albedo)
 void CRTMaterial::setSmoothShading(bool smoothShading)
 {
     this->smoothShading = smoothShading;
+}
+
+void CRTMaterial::setIor(float ior)
+{
+    this->ior = ior;
 }
