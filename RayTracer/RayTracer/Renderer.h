@@ -30,28 +30,26 @@ class Renderer
 {
 public:
 	Renderer(const CRTScene* scene);
-	//static void renderAnimationLight(const CRTScene& scene, const std::string& outputFile);
-	void renderScene(const std::string& outputFile);
+	void renderAnimation(const std::string& outputFileBaseName) const;
+	void renderScene(const std::string& outputFile) const;
 
 	static const int MAX_RAY_DEPTH = 5;
 private:
 	const CRTScene* scene = nullptr;
 
-	CRTRay genRay(int x, int y, const CRTCamera& camera, int imageWidth, int imageHeight);
+	CRTRay genRay(int x, int y, const CRTCamera& camera, int imageWidth, int imageHeight) const;
 
-	RayIntersectionData traceRay(const CRTRay& ray, float maxT = std::numeric_limits<float>::infinity());
+	RayIntersectionData traceRay(const CRTRay& ray, float maxT = std::numeric_limits<float>::infinity()) const;
 
-	bool isPointInTriangle(const CRTVector& point, const CRTTriangle& triangle);
+	bool isPointInTriangle(const CRTVector& point, const CRTTriangle& triangle) const;
 	
-	CRTVector calculatePointNormal(const CRTVector& point, const CRTMesh& mesh, int idx0, int idx1, int idx2);
+	CRTVector calculatePointNormal(const CRTVector& point, const CRTMesh& mesh, int idx0, int idx1, int idx2) const;
 
-	CRTVector shade(const CRTRay& ray, const RayIntersectionData& data);
+	CRTVector shade(const CRTRay& ray, const RayIntersectionData& data) const;
 
-	CRTVector shadeDiffuse(const CRTRay& ray, const RayIntersectionData& data);
-	CRTVector shadeReflective(const CRTRay& ray, const RayIntersectionData& data);
-	CRTVector shadeRefractive(const CRTRay& ray, const RayIntersectionData& data);
-	CRTVector shadeConstant(const CRTRay& ray, const RayIntersectionData& data);
-
-
+	CRTVector shadeDiffuse(const CRTRay& ray, const RayIntersectionData& data) const;
+	CRTVector shadeReflective(const CRTRay& ray, const RayIntersectionData& data) const;
+	CRTVector shadeRefractive(const CRTRay& ray, const RayIntersectionData& data) const;
+	CRTVector shadeConstant(const CRTRay& ray, const RayIntersectionData& data) const;
 };
 

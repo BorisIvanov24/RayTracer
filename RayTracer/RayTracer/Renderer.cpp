@@ -51,7 +51,7 @@ void writePixel(std::ofstream& ofs, const CRTVector& color) {
     ofs << r << ' ' << g << ' ' << b << '\t';
 }
 
-CRTVector Renderer::calculatePointNormal(const CRTVector& point, const CRTMesh& mesh, int idx0, int idx1, int idx2)
+CRTVector Renderer::calculatePointNormal(const CRTVector& point, const CRTMesh& mesh, int idx0, int idx1, int idx2) const
 {
     CRTVector v0Normal = mesh.getVertexNormals()[idx0];
     CRTVector v1Normal = mesh.getVertexNormals()[idx1];
@@ -78,7 +78,7 @@ CRTVector multiplyColors(const CRTVector& lhs, const CRTVector& rhs)
     return { lhs.getX() * rhs.getX(), lhs.getY() * rhs.getY(), lhs.getZ() * rhs.getZ() };
 }
 
-CRTVector Renderer::shade(const CRTRay& ray, const RayIntersectionData& data)
+CRTVector Renderer::shade(const CRTRay& ray, const RayIntersectionData& data) const
 {
     CRTVector resultColorVector(0.f, 0.f, 0.f);
 
@@ -115,10 +115,10 @@ CRTVector Renderer::shade(const CRTRay& ray, const RayIntersectionData& data)
     return resultColorVector;
 }
 
-CRTVector Renderer::shadeDiffuse(const CRTRay& ray, const RayIntersectionData& data)
+CRTVector Renderer::shadeDiffuse(const CRTRay& ray, const RayIntersectionData& data) const
 {
     const float shadowBias = 1e-2f;
-
+    
     CRTVector finalColor(0.f, 0.f, 0.f);
     CRTVector albedo = data.material->getAlbedo();
 
@@ -157,7 +157,7 @@ CRTVector Renderer::shadeDiffuse(const CRTRay& ray, const RayIntersectionData& d
     return finalColor;
 }
 
-CRTVector Renderer::shadeReflective(const CRTRay& ray, const RayIntersectionData& data)
+CRTVector Renderer::shadeReflective(const CRTRay& ray, const RayIntersectionData& data) const
 {
     CRTVector normal = data.intersectionPointNormal;
 
@@ -178,7 +178,7 @@ CRTVector Renderer::shadeReflective(const CRTRay& ray, const RayIntersectionData
     return finalColor;
 }
 
-CRTVector Renderer::shadeRefractive(const CRTRay& ray, const RayIntersectionData& data)
+CRTVector Renderer::shadeRefractive(const CRTRay& ray, const RayIntersectionData& data) const
 {
     float refractionBias = 1e-2f;
     float reflectionBias = 1e-2f;
@@ -244,7 +244,7 @@ CRTVector Renderer::shadeRefractive(const CRTRay& ray, const RayIntersectionData
 
 }
 
-CRTVector Renderer::shadeConstant(const CRTRay& ray, const RayIntersectionData& data)
+CRTVector Renderer::shadeConstant(const CRTRay& ray, const RayIntersectionData& data) const
 {
     CRTVector finalColor = data.material->getAlbedo();
 
@@ -256,10 +256,10 @@ Renderer::Renderer(const CRTScene* scene) : scene(scene)
 
 }
 
-void Renderer::renderScene(const std::string& outputFile)
+void Renderer::renderScene(const std::string& outputFile) const
 {
-    int screenWidth = scene->getSettings().imageWidth / 2;
-    int screenHeight = scene->getSettings().imageHeight / 2;
+    int screenWidth = scene->getSettings().imageWidth;
+    int screenHeight = scene->getSettings().imageHeight;
 
     std::ofstream ofs(outputFile);
     ofs << "P3\n" << screenWidth << " " << screenHeight << "\n255\n";
@@ -285,70 +285,45 @@ void Renderer::renderScene(const std::string& outputFile)
     ofs.close();
 }
 
-//void Renderer::renderAnimationLight(const CRTScene& scene, const std::string& outputFile)
-//{
-//    int screenWidth = scene.getSettings().imageWidth / 2;
-//    int screenHeight = scene.getSettings().imageHeight / 2;
-//
-//    for (int k = 15; k < 16; k++) {
-//        CRTCamera camera = scene.getCamera();
-//        camera.panAroundTarget(k * 20, CRTVector(0.f, -5.f, 0.f));
-//        //camera.pan(k * 60);
-//
-//        
-//        std::ofstream ofs(outputFile + "15.ppm");
-//        //std::ofstream ofs(outputFile + static_cast<char>('0' + k) + ".ppm");
-//        ofs << "P3\n" << screenWidth << " " << screenHeight << "\n255\n";
-//
-//        for (int j = 0; j < screenHeight; j++) {
-//
-//            if (j % (screenHeight / 100) == 0)
-//                std::cout << (j / (screenHeight / 100)) << "%\n";
-//
-//            for (int i = 0; i < screenWidth; i++) {
-//
-//                CRTRay ray = genRay(i, j, camera, screenWidth, screenHeight);
-//
-//                RayIntersectionData data = traceRay(ray, scene);
-//
-//                if (data.isIntersected)
-//                {
-//                    if (data.material->getType() == MaterialType::DIFFUSE)
-//                    {
-//                        CRTVector finalColor = handleShadowRays(data, scene);
-//                        writePixel(ofs, finalColor);
-//                    }
-//                    else
-//                    {
-//                        RayIntersectionData reflectionRayData = traceReflectionRay(ray, data, scene, 1);
-//
-//                        if (!reflectionRayData.isIntersected)
-//                        {
-//                            writePixel(ofs, reflectionRayData.color);
-//                        }
-//                        else
-//                        {
-//                            CRTVector finalColor = handleShadowRays(reflectionRayData, scene);
-//                            writePixel(ofs, finalColor);
-//                        }
-//                    }
-//
-//                }
-//                else
-//                {
-//                    writePixel(ofs, scene.getSettings().backgroundColor);
-//                }
-//
-//            }
-//            ofs << "\n";
-//        }
-//        
-//        std::cout << "100%\n";
-//        ofs.close();
-//    }
-//}
+void Renderer::renderAnimation(const std::string& outputFileBaseName) const
+{
+    int screenWidth = scene->getSettings().imageWidth;
+    int screenHeight = scene->getSettings().imageHeight;
 
-CRTRay Renderer::genRay(int x, int y, const CRTCamera& camera, int imageWidth, int imageHeight) {
+    for (int k = 0; k < 16; k++) 
+    {
+        CRTCamera camera = scene->getCamera();
+        camera.panAroundTarget(k * 20, CRTVector(0.f, -5.f, 0.f));
+
+        std::ofstream ofs(outputFileBaseName + std::to_string(k) + ".ppm");
+
+        ofs << "P3\n" << screenWidth << " " << screenHeight << "\n255\n";
+
+        for (int j = 0; j < screenHeight; j++) {
+
+            if (j % (screenHeight / 100) == 0)
+                std::cout << (j / (screenHeight / 100)) << "%\n";
+
+            for (int i = 0; i < screenWidth; i++) {
+
+                CRTRay ray = genRay(i, j, camera, screenWidth, screenHeight);
+
+                RayIntersectionData data = traceRay(ray);
+
+                CRTVector finalColor = shade(ray, data);
+
+                writePixel(ofs, finalColor);
+            }
+            ofs << "\n";
+        }
+        std::cout << "100%\n";
+        ofs.close();
+        
+    }
+}
+
+CRTRay Renderer::genRay(int x, int y, const CRTCamera& camera, int imageWidth, int imageHeight) const
+{
     float xF = (x + 0.5f) / imageWidth;
     float yF = (y + 0.5f) / imageHeight;
 
@@ -362,7 +337,8 @@ CRTRay Renderer::genRay(int x, int y, const CRTCamera& camera, int imageWidth, i
     return CRTRay(camera.getPosition(), direction, 0, CRTRayType::CAMERA);
 }
 
-bool Renderer::isPointInTriangle(const CRTVector& point, const CRTTriangle& triangle) {
+bool Renderer::isPointInTriangle(const CRTVector& point, const CRTTriangle& triangle) const
+{
     CRTVector V0P = point - triangle.getVertex(0);
     CRTVector E0 = triangle.getVertex(1) - triangle.getVertex(0);
 
@@ -389,11 +365,11 @@ bool Renderer::isPointInTriangle(const CRTVector& point, const CRTTriangle& tria
     return true;
 }
 
-RayIntersectionData Renderer::traceRay(const CRTRay& ray, float maxT)
+RayIntersectionData Renderer::traceRay(const CRTRay& ray, float maxT) const
 {
     MinData minData;
     minData.t = -1.0f;
-
+    
     for (size_t i = 0; i < scene->getObjects().size(); i++) {
         const auto& object = scene->getObjects()[i];
         const auto& vertices = object.getVertices();

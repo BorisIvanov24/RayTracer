@@ -9,6 +9,6 @@ int main()
 
 	Renderer renderer(&scene);
 
-	renderer.renderScene("scene8_Lec11.ppm");
+	renderer.renderScene("testImage.ppm");
 
 }
