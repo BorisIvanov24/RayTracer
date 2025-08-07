@@ -11,8 +11,11 @@ struct RayIntersectionData
 	CRTTriangle intersectionTriangle;
 	CRTVector intersectionPointNormal;
 	const CRTMaterial* material = nullptr;
-	CRTVector color;
+	int idx0;
+	int idx1;
+	int idx2;
 	int objectIdx = -1;
+	CRTVector color;
 	int triangleIdx = -1;
 };
 
@@ -24,6 +27,7 @@ struct MinData
 	int idx1;
 	int idx2;
 	const CRTMesh* mesh = nullptr;
+	int objectIdx = -1;
 };
 
 class Renderer

@@ -39,4 +39,22 @@ const std::vector<CRTMaterial>& CRTScene::getMaterials() const
 	return materials;
 }
 
+const std::vector<CRTTexture*>& CRTScene::getTextures() const
+{
+	return textures;
+}
+
+const CRTTexture* CRTScene::getTextureByName(const std::string& name) const
+{
+	for (int i = 0; i < textures.size(); i++)
+	{
+		if (textures[i]->getName() == name)
+		{
+			return textures[i];
+		}
+	}
+
+	return nullptr;
+}
+
 

@@ -20,6 +20,21 @@ float CRTMaterial::getIor() const
     return ior;
 }
 
+bool CRTMaterial::isTexture() const
+{
+    return !textureName.empty();
+}
+
+const std::string& CRTMaterial::getTextureName() const
+{
+    return textureName;
+}
+
+void CRTMaterial::setTextureName(const std::string& textureName)
+{
+    this->textureName = textureName;
+}
+
 void CRTMaterial::setType(CRTMaterialType type)
 {
     this->type = type;

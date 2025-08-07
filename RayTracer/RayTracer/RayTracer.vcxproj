@@ -134,11 +134,17 @@
     <ClCompile Include="CRTMesh.cpp" />
     <ClCompile Include="CRTScene.cpp" />
     <ClCompile Include="CRTSceneParser.cpp" />
+    <ClCompile Include="CRTTexture.cpp" />
+    <ClCompile Include="CRTTextureAlbedo.cpp" />
+    <ClCompile Include="CRTTextureBitmap.cpp" />
+    <ClCompile Include="CRTTextureChecker.cpp" />
+    <ClCompile Include="CRTTextureEdges.cpp" />
     <ClCompile Include="Math\CRTRay.cpp" />
     <ClCompile Include="Math\CRTTriangle.cpp" />
     <ClCompile Include="Math\CRTMatrix.cpp" />
     <ClCompile Include="Math\CRTVector.cpp" />
     <ClCompile Include="Renderer.cpp" />
+    <ClCompile Include="stb_image\stb_image.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CRTCamera.h" />
@@ -147,6 +153,11 @@
     <ClInclude Include="CRTMesh.h" />
     <ClInclude Include="CRTScene.h" />
     <ClInclude Include="CRTSceneParser.h" />
+    <ClInclude Include="CRTTexture.h" />
+    <ClInclude Include="CRTTextureAlbedo.h" />
+    <ClInclude Include="CRTTextureBitmap.h" />
+    <ClInclude Include="CRTTextureChecker.h" />
+    <ClInclude Include="CRTTextureEdges.h" />
     <ClInclude Include="Math\CRTRay.h" />
     <ClInclude Include="Math\CRTTriangle.h" />
     <ClInclude Include="Math\CRTMatrix.h" />
@@ -187,6 +198,7 @@
     <ClInclude Include="rapidjson\stringbuffer.h" />
     <ClInclude Include="rapidjson\writer.h" />
     <ClInclude Include="Renderer.h" />
+    <ClInclude Include="stb_image\stb_image.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -17,6 +17,11 @@ void CRTMesh::setMaterialIndex(int index)
 	materialIndex = index;
 }
 
+void CRTMesh::addUV(const CRTVector& uv)
+{
+	uvData.push_back(uv);
+}
+
 void CRTMesh::print() const
 {
 	for (const auto& obj : vertices)
@@ -46,6 +51,11 @@ const std::vector<int>& CRTMesh::getIndices() const
 const std::vector<CRTVector>& CRTMesh::getVertexNormals() const
 {
 	return vertexNormals;
+}
+
+const std::vector<CRTVector>& CRTMesh::getUV() const
+{
+	return uvData;
 }
 
 int CRTMesh::getMaterialIndex() const

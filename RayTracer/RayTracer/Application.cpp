@@ -5,10 +5,10 @@
 
 int main()
 {
-	CRTScene scene("Scenes/scene8_Lec11.crtscene");
+	CRTScene scene("Scenes/scene4_Lec12.crtscene");
 
 	Renderer renderer(&scene);
 
-	renderer.renderScene("testImage.ppm");
+	renderer.renderScene("scene4_Lec12.ppm");
 
 }

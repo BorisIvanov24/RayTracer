@@ -120,7 +120,55 @@ CRTVector Renderer::shadeDiffuse(const CRTRay& ray, const RayIntersectionData& d
     const float shadowBias = 1e-2f;
     
     CRTVector finalColor(0.f, 0.f, 0.f);
-    CRTVector albedo = data.material->getAlbedo();
+    CRTVector albedo;
+    
+    if (data.material->isTexture())
+    {
+        const std::string& textureName = data.material->getTextureName();
+        const CRTTexture* texture = scene->getTextureByName(textureName);
+
+        CRTVector v0 = data.intersectionTriangle.getVertex(0);
+        CRTVector v1 = data.intersectionTriangle.getVertex(1);
+        CRTVector v2 = data.intersectionTriangle.getVertex(2);
+        
+        CRTVector v0v2 = v2 - v0;
+        CRTVector v0v1 = v1 - v0;
+        CRTVector v0P = data.intersectionPoint - v0;
+
+        float u = cross(v0P, v0v2).length() / cross(v0v1, v0v2).length();
+        float v = cross(v0v1, v0P).length() / cross(v0v1, v0v2).length();
+        float z = 1 - u - v;
+
+        CRTVector uv0 = scene->getObjects()[data.objectIdx].getUV()[data.idx0];
+        CRTVector uv1 = scene->getObjects()[data.objectIdx].getUV()[data.idx1];
+        CRTVector uv2 = scene->getObjects()[data.objectIdx].getUV()[data.idx2];
+
+        CRTVector interpolatedUV = u * uv1 + v * uv2 + z * uv0;
+
+        if (texture != nullptr) 
+        {
+            if (texture->getType() == "bitmap" || texture->getType() == "checker")
+            {
+                albedo = texture->getColor(interpolatedUV.getX(), interpolatedUV.getY());
+            }
+            else
+            {
+                albedo = texture->getColor(u, v);
+
+            }
+        } 
+        else
+        {
+            std::cout << "nullptr" << std::endl;
+
+        }
+
+       
+    }
+    else
+    {
+        albedo = data.material->getAlbedo();
+    }
 
     CRTVector normal = data.material->isSmoothShading() ? data.intersectionPointNormal : data.intersectionTriangle.getNormal();
 
@@ -418,6 +466,7 @@ RayIntersectionData Renderer::traceRay(const CRTRay& ray, float maxT) const
                     minData.idx0 = idx0;
                     minData.idx1 = idx1;
                     minData.idx2 = idx2;
+                    minData.objectIdx = i;
                 }
             }
         }
@@ -436,6 +485,7 @@ RayIntersectionData Renderer::traceRay(const CRTRay& ray, float maxT) const
 
     RayIntersectionData toReturn;
     
-    return { true, intersectionPoint, minData.triangle, pointNormal, material};
+    return { true, intersectionPoint, minData.triangle, pointNormal, material,
+             minData.idx0, minData.idx1, minData.idx2, minData.objectIdx};
 }
 

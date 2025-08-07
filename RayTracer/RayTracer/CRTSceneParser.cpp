@@ -1,4 +1,10 @@
 #include "CRTSceneParser.h"
+#include "CRTTexture.h"
+#include "CRTTextureAlbedo.h"
+#include "CRTTextureBitmap.h"
+#include "CRTTextureChecker.h"
+#include "CRTTextureEdges.h"
+
 #include <iostream>
 #include <fstream>
 using namespace rapidjson;
@@ -75,6 +81,18 @@ void CRTSceneParser::parseCamera(const rapidjson::Document& doc, CRTScene& scene
 void CRTSceneParser::parseMesh(const rapidjson::Value& val, CRTScene& scene)
 {
 	CRTMesh mesh;
+
+	const Value& uvsVal = val.FindMember("uvs")->value;
+	if (!uvsVal.IsNull() && uvsVal.IsArray())
+	{
+		int uvsCount = uvsVal.GetArray().Size();
+
+		for (int i = 0; i < uvsCount / 3; i++)
+		{
+			CRTVector uv = loadVector(uvsVal.GetArray(), i * 3);
+			mesh.addUV(uv);
+		}
+	}
 
 	const Value& verticesVal = val.FindMember("vertices")->value;
 	if (!verticesVal.IsNull() && verticesVal.IsArray())
@@ -171,6 +189,120 @@ void CRTSceneParser::parseLight(const rapidjson::Value& val, CRTScene& scene)
 	scene.lights.push_back(light);
 }
 
+void CRTSceneParser::parseTextures(const rapidjson::Document& doc, CRTScene& scene)
+{
+	const Value& texturesVal = doc.FindMember("textures")->value;
+
+	if (!texturesVal.IsNull() && texturesVal.IsArray())
+	{
+		int texturesCount = texturesVal.GetArray().Size();
+
+		for (int i = 0; i < texturesCount; i++)
+		{
+			const Value& texture = texturesVal.GetArray()[i];
+			parseTexture(texture, scene);
+		}
+	}
+}
+
+void CRTSceneParser::parseTexture(const rapidjson::Value& val, CRTScene& scene)
+{
+	CRTTexture* textureToAdd = nullptr;
+	std::string name;
+
+	const Value& nameVal = val.FindMember("name")->value;
+	if (!nameVal.IsNull())
+	{
+		name = nameVal.GetString();
+	}
+	std::cout << "name: " << name << std::endl;
+
+	std::string type;
+
+	const Value& typeVal = val.FindMember("type")->value;
+	if (!typeVal.IsNull())
+	{
+		type = typeVal.GetString();
+	}
+
+	if (type == "albedo")
+	{
+		CRTVector albedo;
+
+		const Value& albedoVal = val.FindMember("albedo")->value;
+		if (!albedoVal.IsNull())
+		{
+			albedo = loadVector(albedoVal.GetArray(), 0);
+		}
+		
+		textureToAdd = new CRTTextureAlbedo(albedo, name);
+	}
+	else if (type == "edges")
+	{
+		CRTVector edgeColor, innerColor;
+		float edgeWidth;
+
+		const Value& edgeColorVal = val.FindMember("edge_color")->value;
+		if (!edgeColorVal.IsNull())
+		{
+			edgeColor = loadVector(edgeColorVal.GetArray(), 0);
+		}
+
+		const Value& innerColorVal = val.FindMember("inner_color")->value;
+		if (!innerColorVal.IsNull())
+		{
+			innerColor = loadVector(innerColorVal.GetArray(), 0);
+		}
+
+		const Value& edgeWidthVal = val.FindMember("edge_width")->value;
+		if (!edgeWidthVal.IsNull())
+		{
+			edgeWidth = edgeWidthVal.GetFloat();
+		}
+
+		textureToAdd = new CRTTextureEdges(edgeColor, innerColor, edgeWidth, name);
+	}
+	else if (type == "checker")
+	{
+		CRTVector colorA, colorB;
+		float squareSize;
+
+		const Value& colorAVal = val.FindMember("color_A")->value;
+		if (!colorAVal.IsNull())
+		{
+			colorA = loadVector(colorAVal.GetArray(), 0);
+		}
+
+		const Value& colorBVal = val.FindMember("color_B")->value;
+		if (!colorBVal.IsNull())
+		{
+			colorB = loadVector(colorBVal.GetArray(), 0);
+		}
+
+		const Value& squareSizeVal = val.FindMember("square_size")->value;
+		if (!squareSizeVal.IsNull())
+		{
+			squareSize = squareSizeVal.GetFloat();
+		}
+
+		textureToAdd = new CRTTextureChecker(colorA, colorB, squareSize, name);
+	}
+	else
+	{
+		std::string filePath;
+
+		const Value& filePathVal = val.FindMember("file_path")->value;
+		if (!filePathVal.IsNull())
+		{
+			filePath = filePathVal.GetString();
+		}
+
+		textureToAdd = new CRTTextureBitmap(filePath, name);
+	}
+
+	scene.textures.push_back(textureToAdd);
+}
+
 void CRTSceneParser::parseMaterials(const rapidjson::Document& doc, CRTScene& scene)
 {
 	const Value& materialsVal = doc.FindMember("materials")->value;
@@ -178,6 +310,7 @@ void CRTSceneParser::parseMaterials(const rapidjson::Document& doc, CRTScene& sc
 	if (!materialsVal.IsNull() && materialsVal.IsArray())
 	{
 		int materialsCount = materialsVal.GetArray().Size();
+		//std::cout << "materialsCount:\n" << materialsCount << std::endl;
 
 		for (int i = 0; i < materialsCount; i++)
 		{
@@ -239,8 +372,13 @@ void CRTSceneParser::parseMaterial(const rapidjson::Value& val, CRTScene& scene)
 		if (!albedoVal.IsNull() && albedoVal.IsArray())
 		{
 			albedo = loadVector(albedoVal.GetArray(), 0);
+			material.setAlbedo(albedo);
+
 		}
-		material.setAlbedo(albedo);
+		else
+		{
+			material.setTextureName(albedoVal.GetString());
+		}
 	}
 
 	const Value& smoothShadingVal = val.FindMember("smooth_shading")->value;
@@ -252,15 +390,16 @@ void CRTSceneParser::parseMaterial(const rapidjson::Value& val, CRTScene& scene)
 
 	scene.materials.push_back(material);
 
-
-	/*std::cout << "albedo:\n ";
+	std::cout << "textureName:\n";
+	std::cout << material.getTextureName() << std::endl;
+	std::cout << "albedo:\n ";
 	albedo.print(std::cout);
 	std::cout << "smooth_shading:\n";
 	std::cout << smoothShading <<std::endl;
 	std::cout << "type\n";
 	std::cout << (int)type << std::endl;
 	std::cout << "ior:\n";
-	std::cout << ior << std::endl;*/
+	std::cout << ior << std::endl;
 }
 
 void CRTSceneParser::parseScene(const std::string& sceneFileName, CRTScene& scene)
@@ -277,6 +416,7 @@ void CRTSceneParser::parseScene(const std::string& sceneFileName, CRTScene& scen
 	parseObjects(doc, scene);
 	parseLights(doc, scene);
 	parseMaterials(doc, scene);
+	parseTextures(doc, scene);
 
 	/*for (auto& obj : scene.geometryObjects)
 	{
