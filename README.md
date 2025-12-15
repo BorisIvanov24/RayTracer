@@ -19,16 +19,19 @@ A simple CPU-based ray tracer written in **C++**, developed as a learning projec
 
 ### 🖼️ Images
 
-![Render Example 1](assets/scene5_Lec9.png)
+![Render Example 1](assets/dragonTriangles.png)
+*Example render showcasing triangle intersection.*
+
+![Render Example 2](assets/scene5_Lec9.png)
 *Example render showcasing 3D model rendering, light, shadows and reflections.*
 
-![Render Example 1](assets/scene5_Lec11.png)
+![Render Example 3](assets/scene5_Lec11.png)
 *Example render showcasing refraction.*
 
-![Render Example 1](assets/scene4_Lec12.png)
+![Render Example 4](assets/scene4_Lec12.png)
 *Example render showcasing textures.*
 
-![Render Example 1](assets/scene8_Lec11.png)
+![Render Example 5](assets/scene8_Lec11.png)
 *Example render showcasing more complex scenes with refraction and reflection.*
 
 ### 🎥 Videos
